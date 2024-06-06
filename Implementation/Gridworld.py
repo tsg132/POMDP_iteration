@@ -11,7 +11,7 @@ import math
 import csv  
 import matplotlib.pyplot as plt
 import numpy as np 
-# import cupy as cu
+import cupy as cu
 from Agentclass import Agent
 import os
 from random import Random
@@ -22,8 +22,8 @@ from matplotlib.offsetbox import (OffsetImage, AnnotationBbox)
 import matplotlib.image as image
 
 #Use gpu device number 3 
-# dev1 = cu.cuda.Device(3)
-# dev1.use()
+dev1 = cu.cuda.Device(0)
+dev1.use()
 
 def random_exclude(range_start, range_end, *excludes):
     
@@ -331,6 +331,7 @@ class GridWorld:
      
     def Render(self): 
          
+         
         fig, ax = plt.subplots()
         plt.rcParams["figure.figsize"] = (20,20)
         xy = (0.5,0.5)
@@ -402,13 +403,10 @@ class GridWorld:
         self.omegalistavg = []
         self.ErrorList = []
         self.Errorhistory = []
-        # self.Errorhistory = cu.array(np.float64(self.Errorhistory))
-        self.Errorhistory = np.array(self.Errorhistory, dtype=np.float64)
+        self.Errorhistory = cu.array(np.float64(self.Errorhistory))
 
         self.sbehistory = []
-        # self.sbehistory = cu.array(self.sbehistory)
-        self.sbehistory = np.array(self.sbehistory)
-
+        self.sbehistory = cu.array(self.sbehistory)
 
         for agent in self.ListofAgents:
             agent.reset(centralized, self.omega_init, self.omega_dd_init)        
@@ -422,9 +420,7 @@ class GridWorld:
 
         sbe = sbe/self.num
         print("Sbe Error: ", sbe)
-        # self.sbehistory = cu.append(self.sbehistory,cu.mean(np.float64(sbe))) 
-        self.sbehistory = np.append(self.sbehistory, np.mean(np.float64(sbe)))
-
+        self.sbehistory = cu.append(self.sbehistory,cu.mean(np.float64(sbe))) 
         return
 
     def Error(self):
@@ -448,123 +444,34 @@ class GridWorld:
             self.ErrorList.append(y)
 
         self.omegalistavg = [] 
-        # self.Errorhistory = cu.append(self.Errorhistory,cu.mean(cu.array(np.float64(self.ErrorList))))
-        self.Errorhistory = np.append(self.Errorhistory, np.mean(np.array(self.ErrorList, dtype=np.float64)))
+        self.Errorhistory = cu.append(self.Errorhistory,cu.mean(cu.array(np.float64(self.ErrorList))))
         return
 
 
-    # def step(self, a, centralizedtraining):
-    #     print("Observe- Gridworld")
-    #     self.Observe(centralizedtraining)
-            
-    #     for x in self.ListofAgents:
-    #         if centralizedtraining == 0:
-    #             if x.idnum == 1:
-    #                 print("Centralized_Adapt- Gridworld")
-    #             x.Centralized_Adapt(self.jointobservation) 
-
-    #         elif centralizedtraining == 1:
-    #             if x.idnum == 1:
-    #                 print("Dec Adapt- Gridworld")
-    #             x.Adapt(self.gamma) #Get m_i
-
-    #         else:
-    #             if x.idnum == 1:
-    #                 print("Algo3: Dec Adapt & Cent Adapt- Gridworld")
-    #             x.Centralized_Adapt(self.jointobservation) 
-    #             x.Adapt(self.gamma)
-
-    #     #EtaList_Centralized = []
-    #     if centralizedtraining != 0: 
-    #         EtaList = []
-    #         for x in self.ListofAgents: 
-    #             EtaList.append(x.n) 
-
-    #         for x in self.ListofAgents: 
-    #             if x.idnum ==1:
-    #                 print("Combine - Gridworld")
-    #             x.Combine(self.num, self.CombinationMatrix, EtaList)
-
-
-    #     if (a == 0):
-    #         self.Action(centralizedtraining) 
-        
-
-    #     self.Render()
-
-    #     #observe, get reward
-    #     self.Reward()
- 
-    #     for x in self.ListofAgents:
-    #         if centralizedtraining == 0 or centralizedtraining == 2: 
-    #             x.Centralized_Evolve(self.jointaction)
-
-    #         if centralizedtraining != 0: 
-    #             #Decentralized
-    #             ank = []    
-    #             anc_num = 0
-    #             y = self.CombinationMatrix[x.idnum]
-    #             for i in range(len(y)):
-    #                 if y[i] > 0:
-    #                     ank.append(self.actionlist[i]) #actions of neighbors
-    #                 else:
-    #                     anc_num += 1 #non neighbors
-    #             print("Evolve", x.idnum)
-    #             x.Evolve(ank,anc_num) #Get n_i+1
-
-        
-    #     print("TD Error - Gridworld")
-
-    #     for x in self.ListofAgents:
-           
-    #         if centralizedtraining != 1:  
-    #             x.TD_Error_Centralized(self.cent_r)
-
-    #         #Decentralized
-    #         else:
-    #             x.TD_Error()
-        
-    #     #Decentralized
-    #     if centralizedtraining == 1: 
-    #         OmegaList = []
-    #         for x in self.ListofAgents:
-    #             OmegaList.append(x.omegalist)   
-
-    #         for x in self.ListofAgents: 
-    #             x.Diffusion_omega(self.CombinationMatrix, OmegaList)  
-         
-    #     self.Actual_transition(self.jointaction)  
-
-    #     self.Error() 
-    #     self.sbe()
-         
-    #     return
-    
-    # #done
-
-    def step(self, a, centralizedtraining, use_optimized=False):
-        if use_optimized:
-            return self.step_optimized(a, centralizedtraining)
-        
+    def step(self, a, centralizedtraining):
         print("Observe- Gridworld")
         self.Observe(centralizedtraining)
-                
+            
         for x in self.ListofAgents:
-            if centralizedtraining == 0:
-                if x.idnum == 1:
-                    print("Centralized_Adapt- Gridworld")
-                x.Centralized_Adapt(self.jointobservation)
+            # if centralizedtraining == 0:
+            #     if x.idnum == 1:
+            #         print("Centralized_Adapt- Gridworld")
+            #     x.Centralized_Adapt(self.jointobservation) 
 
-            elif centralizedtraining == 1:
-                if x.idnum == 1:
-                    print("Dec Adapt- Gridworld")
-                x.Adapt(self.gamma) #Get m_i
+            # elif centralizedtraining == 1:
+            #     if x.idnum == 1:
+            #         print("Dec Adapt- Gridworld")
+            #     x.Adapt(self.gamma) #Get m_i
 
-            else:
+            # else:
+            #     if x.idnum == 1:
+            #         print("Algo3: Dec Adapt & Cent Adapt- Gridworld")
+            #     x.Centralized_Adapt(self.jointobservation) 
+            #     x.Adapt(self.gamma)
+            if centralizedtraining == 2:
                 if x.idnum == 1:
-                    print("Algo3: Dec Adapt & Cent Adapt- Gridworld")
-                x.Centralized_Adapt(self.jointobservation) 
-                x.Adapt(self.gamma)
+                    print("NewAlgo: Optimized Adapt- Gridworld")
+                    x.Optimized_Adapt(self.jointobservation, self.gamma)
 
         #EtaList_Centralized = []
         if centralizedtraining != 0: 
@@ -573,18 +480,19 @@ class GridWorld:
                 EtaList.append(x.n) 
 
             for x in self.ListofAgents: 
-                if x.idnum == 1:
+                if x.idnum ==1:
                     print("Combine - Gridworld")
                 x.Combine(self.num, self.CombinationMatrix, EtaList)
 
-        if (a == 0):
-            self.Action(centralizedtraining) 
+
+        self.Action(centralizedtraining) 
+        
 
         self.Render()
 
-        # Observe, get reward, and update using original methods
+        #observe, get reward
         self.Reward()
-    
+ 
         for x in self.ListofAgents:
             if centralizedtraining == 0 or centralizedtraining == 2: 
                 x.Centralized_Evolve(self.jointaction)
@@ -596,36 +504,41 @@ class GridWorld:
                 y = self.CombinationMatrix[x.idnum]
                 for i in range(len(y)):
                     if y[i] > 0:
-                        ank.append(self.actionlist[i]) # actions of neighbors
+                        ank.append(self.actionlist[i]) #actions of neighbors
                     else:
-                        anc_num += 1 # non neighbors
+                        anc_num += 1 #non neighbors
                 print("Evolve", x.idnum)
                 x.Evolve(ank,anc_num) #Get n_i+1
 
+        
         print("TD Error - Gridworld")
 
         for x in self.ListofAgents:
+           
             if centralizedtraining != 1:  
                 x.TD_Error_Centralized(self.cent_r)
+
+            #Decentralized
             else:
                 x.TD_Error()
-
+        
         #Decentralized
         if centralizedtraining == 1: 
             OmegaList = []
             for x in self.ListofAgents:
-                OmegaList.append(x.omegalist)
+                OmegaList.append(x.omegalist)   
 
             for x in self.ListofAgents: 
                 x.Diffusion_omega(self.CombinationMatrix, OmegaList)  
-            
+         
         self.Actual_transition(self.jointaction)  
 
         self.Error() 
         self.sbe()
-
+         
         return
-
+    
+    # #done
     def smooth(self,m):
         r = [] 
         for y in range(len(m[0])): #for every iteration
@@ -636,40 +549,6 @@ class GridWorld:
                 r.append(e)
             
         return r
-
-
-    def step_optimized(self, a, centralizedtraining):
-        print("Observe- Gridworld")
-        self.Observe(centralizedtraining)
-        
-        EtaList = []
-        if centralizedtraining != 0:
-            for x in self.ListofAgents:
-                EtaList.append(x.n)
-
-        # Use the integrated update method for each agent
-        for x in self.ListofAgents:
-            ank = []
-            anc_num = 0
-            y = self.CombinationMatrix[x.idnum]
-            for i in range(len(y)):
-                if y[i] > 0:
-                    ank.append(self.actionlist[i])  # actions of neighbors
-                else:
-                    anc_num += 1  # non neighbors
-            x.integrated_update(self.target_posx, self.target_posy, ank, anc_num, self.CombinationMatrix, EtaList, centralizedtraining)
-
-        self.Render()
-
-        self.Reward()
-    
-        self.Actual_transition(self.jointaction)  
-
-        self.Error() 
-        self.sbe()
-
-        return
-
 
  
 beliefvectors = []
@@ -728,122 +607,59 @@ fig.show()
 
 #Experiments
 # for k in range(3): 
-#         env.reset(k)
- 
-#         y = ['Argmax: '] 
-#         p = ['Centralized Evaluation, Centralized Execution', 'Decentralized Evaluation, Decentralized Execution',  'Centralized Evaluation, Decentralized Execution']
+env.reset(2)
+
+y = ['Argmax: '] 
+p = ['Centralized Evaluation, Centralized Execution', 'Decentralized Evaluation, Decentralized Execution',  'Centralized Evaluation, Decentralized Execution']
+
+
+d = str(num)+ '-'+ str(height) + keyword
+d1 = d + '.txt'
+
+j = 1
+    
+#for more than 1 monte carlo experiment
+for m in range(3):  
+    
+    for i in range(iterations):
+        #print(env.CombinationMatrix)
+        plt.rcParams["figure.figsize"] = (20,20)    
+        # if (k == 2):
+        print("Centr: CD_Optimized, iter", i, "exp", m)
+        env.step(j, centralizedtraining = 2)
+        # elif (k == 1):
+        #     print("Centr: DD, iter", i, "exp", m)
+        #     env.step(j, centralizedtraining = 1)
+        # elif (k == 0):
+        #     print("Centr: CC, iter", i,"exp", m)
+        #     env.step(j, centralizedtraining = 0)
+
+        w2 = env.sbehistory
+        fiii, ax = plt.subplots(1,1)
+        ax.plot(cu.asnumpy(w2))
+        ax.set_yscale('log') 
+        ax.set_title("SBE Error")
+        fiii.savefig(d + str(2) + 'SBEbyiter.png')
+        plt.close(fiii)
+
+        q = env.Errorhistory
+        fiii, ax =plt.subplots(1,1)
+        ax.plot(cu.asnumpy(q)) 
+        ax.set_yscale('log')
+        ax.set_title("Error History")
+        fiii.savefig(d +  str(2) +'ERRORbyiter.png')
+        plt.close(fiii)
+
+        if i%100== 0:
+            data = env.Errorhistory[-100:]
+            with open('AgreementErrorHISTORY'+ d +'-'+str(2)+'-'+str(m)+'.csv', 'a', encoding="ISO-8859-1", newline='') as file:
+                write = csv.writer(file) 
+                write.writerows(map(lambda x: [x], data))
+
+            data = env.sbehistory[-100:]
+            with open('SBEHISTORY'+ d +'-'+str(2)+'-'+str(m)+'.csv', 'a', encoding="ISO-8859-1", newline='') as file:
+                write = csv.writer(file) 
+                write.writerows(map(lambda x: [x], data))
+    
         
-
-#         d = str(num)+ '-'+ str(height) + keyword
-#         d1 = d + '.txt'
-        
-#         j = 1
-            
-#         #for more than 1 monte carlo experiment
-#         for m in range(experiments):  
-            
-#             for i in range(iterations):
-#                 #print(env.CombinationMatrix)
-#                 plt.rcParams["figure.figsize"] = (20,20)    
-#                 if (k == 2):
-#                     print("Centr: CD, iter", i, "exp", m)
-#                     env.step(j, centralizedtraining = 2)
-#                 elif (k == 1):
-#                     print("Centr: DD, iter", i, "exp", m)
-#                     env.step(j, centralizedtraining = 1)
-#                 elif (k == 0):
-#                     print("Centr: CC, iter", i,"exp", m)
-#                     env.step(j, centralizedtraining = 0)
-
-#                 w2 = env.sbehistory
-#                 fiii, ax = plt.subplots(1,1)
-#                 ax.plot(cu.asnumpy(w2))
-#                 ax.set_yscale('log') 
-#                 ax.set_title("SBE Error")
-#                 fiii.savefig(d + str(k) + 'SBEbyiter.png')
-#                 plt.close(fiii)
-
-#                 q = env.Errorhistory
-#                 fiii, ax =plt.subplots(1,1)
-#                 ax.plot(cu.asnumpy(q)) 
-#                 ax.set_yscale('log')
-#                 ax.set_title("Error History")
-#                 fiii.savefig(d +  str(k) +'ERRORbyiter.png')
-#                 plt.close(fiii)
-
-#                 if i%100== 0:
-#                     data = env.Errorhistory[-100:]
-#                     with open('AgreementErrorHISTORY'+ d +'-'+str(k)+'-'+str(m)+'.csv', 'a', encoding="ISO-8859-1", newline='') as file:
-#                         write = csv.writer(file) 
-#                         write.writerows(map(lambda x: [x], data))
-
-#                     data = env.sbehistory[-100:]
-#                     with open('SBEHISTORY'+ d +'-'+str(k)+'-'+str(m)+'.csv', 'a', encoding="ISO-8859-1", newline='') as file:
-#                         write = csv.writer(file) 
-#                         write.writerows(map(lambda x: [x], data))
-            
-                
-#             env.reset(k)
-
-# Experiments
-for k in range(3): 
-    for use_optimized in [False, True]:  # Run for both original and optimized
-        env.reset(k)
-        
-        if use_optimized:
-            method_name = 'Optimized'
-        else:
-            method_name = 'Original'
-        
-        y = ['Argmax: '] 
-        p = ['Centralized Evaluation, Centralized Execution', 'Decentralized Evaluation, Decentralized Execution',  'Centralized Evaluation, Decentralized Execution']
-        
-        d = str(num) + '-' + str(height) + keyword
-        d1 = d + '.txt'
-        
-        j = 1
-            
-        #for more than 1 monte carlo experiment
-        for m in range(experiments):  
-            for i in range(iterations):
-                plt.rcParams["figure.figsize"] = (20,20)    
-                if (k == 2):
-                    print(f"Centr: CD, iter {i}, exp {m}, Method: {method_name}")
-                    env.step(j, centralizedtraining=2, use_optimized=use_optimized)
-                elif (k == 1):
-                    print(f"Centr: DD, iter {i}, exp {m}, Method: {method_name}")
-                    env.step(j, centralizedtraining=1, use_optimized=use_optimized)
-                elif (k == 0):
-                    print(f"Centr: CC, iter {i}, exp {m}, Method: {method_name}")
-                    env.step(j, centralizedtraining=0, use_optimized=use_optimized)
-
-                w2 = env.sbehistory
-                fiii, ax = plt.subplots(1,1)
-                # ax.plot(cu.asnumpy(w2))
-                ax.plot(np.asarray(w2))
-                ax.set_yscale('log') 
-                ax.set_title("SBE Error")
-                fiii.savefig(f"{d}{str(k)}_SBEbyiter_{method_name}.png")
-                plt.close(fiii)
-
-                q = env.Errorhistory
-                fiii, ax =plt.subplots(1,1)
-                # ax.plot(cu.asnumpy(q)) 
-                ax.plot(np.asarray(q))
-                ax.set_yscale('log')
-                ax.set_title("Error History")
-                fiii.savefig(f"{d}{str(k)}_ERRORbyiter_{method_name}.png")
-                plt.close(fiii)
-
-                if i % 100 == 0:
-                    data = env.Errorhistory[-100:]
-                    with open(f'AgreementErrorHISTORY_{d}-{str(k)}-{str(m)}_{method_name}.csv', 'a', encoding="ISO-8859-1", newline='') as file:
-                        write = csv.writer(file) 
-                        write.writerows(map(lambda x: [x], data))
-
-                    data = env.sbehistory[-100:]
-                    with open(f'SBEHISTORY_{d}-{str(k)}-{str(m)}_{method_name}.csv', 'a', encoding="ISO-8859-1", newline='') as file:
-                        write = csv.writer(file) 
-                        write.writerows(map(lambda x: [x], data))
-                
-            env.reset(k)
+    env.reset(2)

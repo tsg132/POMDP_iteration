@@ -5,6 +5,7 @@ import matplotlib as mpl
 import numpy as np
 from scipy.optimize import curve_fit
 from math import log
+import scienceplots
 
 plt.rcParams.update({'text.usetex': True}) 
 mpl.style.use('seaborn-colorblind')

@@ -2,6 +2,7 @@ import pandas as pd
 from matplotlib import pyplot as plt,ticker as mticker
 import matplotlib as mpl
 import matplotlib.font_manager as font_manager 
+import scienceplots
 
 plt.rcParams.update({'text.usetex': True}) 
 mpl.style.use('seaborn-colorblind')

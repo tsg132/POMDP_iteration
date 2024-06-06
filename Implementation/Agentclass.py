@@ -433,6 +433,30 @@ class Agent:
         for x in range(len(self.agentstates)):
             self.centralized_m[x] = self.centralized_m[x] / normalize 
         return 
+    
+    
+    def Optimized_Adapt(self, jointobservation, gamma):
+        if self.idnum == 1:
+            print("Optimized Adapt - Agent")
+        
+        normalize_centralized = 0
+        normalize_decentralized = 0
+        
+        # Combine centralized and decentralized adaptations
+        for x in range(len(self.agentstates)):
+            y = jointobservation[x]
+            self.centralized_m[x] = np.longdouble(y * self.centralized_n[x])
+            normalize_centralized += self.centralized_m[x]
+            
+            z = self.ObsMatrix[x][self.observedstate]  # probability of being at observed state, given it was in state s'
+            self.m[x] = (z ** gamma) * self.n[x]
+            normalize_decentralized += self.m[x]
+
+        for x in range(len(self.agentstates)):
+            self.centralized_m[x] /= normalize_centralized
+            self.m[x] /= normalize_decentralized
+        
+        return
 
     #Transition matrix calculation performed by the agent
     def centralized_transition_matrix_by_agent_fn(self,s,a):
@@ -524,57 +548,3 @@ class Agent:
             x.append(self.omegalist[i] - omegalistavg[i])
         self.error = np.dot(np.array(x).T,np.array(x)) 
         return self.error
-
-def integrated_update(self, target_posx, target_posy, ank, ac_num, CombinationMatrix, EtaList, centralized):
-    # Make observation
-    y = self.Observe(target_posx, target_posy)
-    x = np.random.choice([i for i in range(len(self.agentstates))], p=y)
-    self.observation = self.agentstates[x]
-    self.observedstate = x
-
-    # Adapt
-    normalize = 0
-    for i in range(len(self.agentstates)):
-        obs_prob = self.ObsMatrix[i][self.observedstate]
-        self.m[i] = (obs_prob ** self.discount_factor) * self.n[i]
-        normalize += self.m[i]
-    for i in range(len(self.agentstates)):
-        self.m[i] /= normalize
-
-    # Evolve
-    jointaction_approx = [0, 0]
-    self.n = np.zeros(self.height * self.width)
-    for s in range(self.height * self.width):
-        for sprime_i in range(self.height * self.width):
-            sprime = self.agentstates[sprime_i]
-            jointaction_approx[0] = ac_num * sprime[0]
-            jointaction_approx[1] = ac_num * sprime[1]
-            for j in range(len(ank)):
-                jointaction_approx[0] += ank[j][0]
-                jointaction_approx[1] += ank[j][1]
-            jointaction_approx[0] /= self.num
-            jointaction_approx[1] /= self.num
-            self.approx_transition_model_fn(sprime, jointaction_approx)
-            self.n[s] += self.approx_transition_model[s] * self.m[sprime_i]
-
-    # Take action
-    if centralized == 0:
-        x = np.argmax(self.centralized_m)
-    else:
-        x = np.argmax(self.m)
-    self.action = self.agentstates[int(x)]
-
-    # Collect reward
-    if self.action[0] == target_posx and self.action[1] == target_posy:
-        self.reward = 1
-    elif abs(self.action[0] - target_posx) + abs(self.action[1] - target_posy) <= 3:
-        self.reward = 0.2
-    else:
-        self.reward = 0
-
-    # Update TD error
-    self.td_error = self.reward + self.discount_factor * self.phi * np.dot(self.omegalist, np.array(self.n)) - self.phi * np.dot(self.omegalist, self.m)
-    gradient = self.m
-    for i in range(len(self.omegalist)):
-        self.omegalist[i] = self.omegalist[i] * (1 - 2 * self.alpha * self.rho) + self.alpha * (self.td_error) * gradient[i] * self.phi
-
