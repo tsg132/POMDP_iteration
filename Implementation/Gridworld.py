@@ -22,7 +22,7 @@ from matplotlib.offsetbox import (OffsetImage, AnnotationBbox)
 import matplotlib.image as image
 
 #Use gpu device number 3 
-dev1 = cu.cuda.Device(0)
+dev1 = cu.cuda.Device(3)
 dev1.use()
 
 def random_exclude(range_start, range_end, *excludes):
@@ -331,7 +331,6 @@ class GridWorld:
      
     def Render(self): 
          
-         
         fig, ax = plt.subplots()
         plt.rcParams["figure.figsize"] = (20,20)
         xy = (0.5,0.5)
@@ -453,25 +452,21 @@ class GridWorld:
         self.Observe(centralizedtraining)
             
         for x in self.ListofAgents:
-            # if centralizedtraining == 0:
-            #     if x.idnum == 1:
-            #         print("Centralized_Adapt- Gridworld")
-            #     x.Centralized_Adapt(self.jointobservation) 
-
-            # elif centralizedtraining == 1:
-            #     if x.idnum == 1:
-            #         print("Dec Adapt- Gridworld")
-            #     x.Adapt(self.gamma) #Get m_i
-
-            # else:
-            #     if x.idnum == 1:
-            #         print("Algo3: Dec Adapt & Cent Adapt- Gridworld")
-            #     x.Centralized_Adapt(self.jointobservation) 
-            #     x.Adapt(self.gamma)
-            if centralizedtraining == 2:
+            if centralizedtraining == 0:
                 if x.idnum == 1:
-                    print("NewAlgo: Optimized Adapt- Gridworld")
-                    x.Optimized_Adapt(self.jointobservation, self.gamma)
+                    print("Centralized_Adapt- Gridworld")
+                x.Centralized_Adapt(self.jointobservation) 
+
+            elif centralizedtraining == 1:
+                if x.idnum == 1:
+                    print("Dec Adapt- Gridworld")
+                x.Adapt(self.gamma) #Get m_i
+
+            else:
+                if x.idnum == 1:
+                    print("Algo3: Dec Adapt & Cent Adapt- Gridworld")
+                x.Centralized_Adapt(self.jointobservation) 
+                x.Adapt(self.gamma)
 
         #EtaList_Centralized = []
         if centralizedtraining != 0: 
@@ -485,7 +480,8 @@ class GridWorld:
                 x.Combine(self.num, self.CombinationMatrix, EtaList)
 
 
-        self.Action(centralizedtraining) 
+        if (a == 0):
+            self.Action(centralizedtraining) 
         
 
         self.Render()
@@ -606,60 +602,60 @@ fig.show()
 
 
 #Experiments
-# for k in range(3): 
-env.reset(2)
-
-y = ['Argmax: '] 
-p = ['Centralized Evaluation, Centralized Execution', 'Decentralized Evaluation, Decentralized Execution',  'Centralized Evaluation, Decentralized Execution']
-
-
-d = str(num)+ '-'+ str(height) + keyword
-d1 = d + '.txt'
-
-j = 1
-    
-#for more than 1 monte carlo experiment
-for m in range(3):  
-    
-    for i in range(iterations):
-        #print(env.CombinationMatrix)
-        plt.rcParams["figure.figsize"] = (20,20)    
-        # if (k == 2):
-        print("Centr: CD_Optimized, iter", i, "exp", m)
-        env.step(j, centralizedtraining = 2)
-        # elif (k == 1):
-        #     print("Centr: DD, iter", i, "exp", m)
-        #     env.step(j, centralizedtraining = 1)
-        # elif (k == 0):
-        #     print("Centr: CC, iter", i,"exp", m)
-        #     env.step(j, centralizedtraining = 0)
-
-        w2 = env.sbehistory
-        fiii, ax = plt.subplots(1,1)
-        ax.plot(cu.asnumpy(w2))
-        ax.set_yscale('log') 
-        ax.set_title("SBE Error")
-        fiii.savefig(d + str(2) + 'SBEbyiter.png')
-        plt.close(fiii)
-
-        q = env.Errorhistory
-        fiii, ax =plt.subplots(1,1)
-        ax.plot(cu.asnumpy(q)) 
-        ax.set_yscale('log')
-        ax.set_title("Error History")
-        fiii.savefig(d +  str(2) +'ERRORbyiter.png')
-        plt.close(fiii)
-
-        if i%100== 0:
-            data = env.Errorhistory[-100:]
-            with open('AgreementErrorHISTORY'+ d +'-'+str(2)+'-'+str(m)+'.csv', 'a', encoding="ISO-8859-1", newline='') as file:
-                write = csv.writer(file) 
-                write.writerows(map(lambda x: [x], data))
-
-            data = env.sbehistory[-100:]
-            with open('SBEHISTORY'+ d +'-'+str(2)+'-'+str(m)+'.csv', 'a', encoding="ISO-8859-1", newline='') as file:
-                write = csv.writer(file) 
-                write.writerows(map(lambda x: [x], data))
-    
+for k in range(3): 
+        env.reset(k)
+ 
+        y = ['Argmax: '] 
+        p = ['Centralized Evaluation, Centralized Execution', 'Decentralized Evaluation, Decentralized Execution',  'Centralized Evaluation, Decentralized Execution']
         
-    env.reset(2)
+
+        d = str(num)+ '-'+ str(height) + keyword
+        d1 = d + '.txt'
+        
+        j = 1
+            
+        #for more than 1 monte carlo experiment
+        for m in range(experiments):  
+            
+            for i in range(iterations):
+                #print(env.CombinationMatrix)
+                plt.rcParams["figure.figsize"] = (20,20)    
+                if (k == 2):
+                    print("Centr: CD, iter", i, "exp", m)
+                    env.step(j, centralizedtraining = 2)
+                elif (k == 1):
+                    print("Centr: DD, iter", i, "exp", m)
+                    env.step(j, centralizedtraining = 1)
+                elif (k == 0):
+                    print("Centr: CC, iter", i,"exp", m)
+                    env.step(j, centralizedtraining = 0)
+
+                w2 = env.sbehistory
+                fiii, ax = plt.subplots(1,1)
+                ax.plot(cu.asnumpy(w2))
+                ax.set_yscale('log') 
+                ax.set_title("SBE Error")
+                fiii.savefig(d + str(k) + 'SBEbyiter.png')
+                plt.close(fiii)
+
+                q = env.Errorhistory
+                fiii, ax =plt.subplots(1,1)
+                ax.plot(cu.asnumpy(q)) 
+                ax.set_yscale('log')
+                ax.set_title("Error History")
+                fiii.savefig(d +  str(k) +'ERRORbyiter.png')
+                plt.close(fiii)
+
+                if i%100== 0:
+                    data = env.Errorhistory[-100:]
+                    with open('AgreementErrorHISTORY'+ d +'-'+str(k)+'-'+str(m)+'.csv', 'a', encoding="ISO-8859-1", newline='') as file:
+                        write = csv.writer(file) 
+                        write.writerows(map(lambda x: [x], data))
+
+                    data = env.sbehistory[-100:]
+                    with open('SBEHISTORY'+ d +'-'+str(k)+'-'+str(m)+'.csv', 'a', encoding="ISO-8859-1", newline='') as file:
+                        write = csv.writer(file) 
+                        write.writerows(map(lambda x: [x], data))
+            
+                
+            env.reset(k)

@@ -433,30 +433,6 @@ class Agent:
         for x in range(len(self.agentstates)):
             self.centralized_m[x] = self.centralized_m[x] / normalize 
         return 
-    
-    
-    def Optimized_Adapt(self, jointobservation, gamma):
-        if self.idnum == 1:
-            print("Optimized Adapt - Agent")
-        
-        normalize_centralized = 0
-        normalize_decentralized = 0
-        
-        # Combine centralized and decentralized adaptations
-        for x in range(len(self.agentstates)):
-            y = jointobservation[x]
-            self.centralized_m[x] = np.longdouble(y * self.centralized_n[x])
-            normalize_centralized += self.centralized_m[x]
-            
-            z = self.ObsMatrix[x][self.observedstate]  # probability of being at observed state, given it was in state s'
-            self.m[x] = (z ** gamma) * self.n[x]
-            normalize_decentralized += self.m[x]
-
-        for x in range(len(self.agentstates)):
-            self.centralized_m[x] /= normalize_centralized
-            self.m[x] /= normalize_decentralized
-        
-        return
 
     #Transition matrix calculation performed by the agent
     def centralized_transition_matrix_by_agent_fn(self,s,a):
