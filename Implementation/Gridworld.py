@@ -666,7 +666,7 @@ for m in range(3):
         plt.close(fiii)
 
         rew = env.rewardhistory
-        fiii, ax = plt.subpolots(1, 1)
+        fiii, ax = plt.subplots(1, 1)
         ax.plot(cu.asnumpy(rew))
         ax.set_yscale('linear')
         ax.set_title('Mean Reward History')
@@ -687,5 +687,3 @@ for m in range(3):
             with open('REWARDHIST'+ d +'-'+str(2)+'-'+str(m)+'.csv', 'a', encoding="ISO-8859-1", newline='') as file:
                 write = csv.writer(file) 
                 write.writerows(map(lambda x: [x], data))            
-                
-        env.reset(2)
