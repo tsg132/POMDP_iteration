@@ -291,12 +291,25 @@ class GridWorld:
  
      
     def Reward(self):
+
+        #     def sbe(self):
+        # sbe = 0 
+        # for x in self.ListofAgents:
+        #     y = x.td_error
+        #     sbe += y*y
+
+        # sbe = sbe/self.num
+        # print("Sbe Error: ", sbe)
+        # self.sbehistory = cu.append(self.sbehistory,cu.mean(np.float64(sbe))) 
+        # return
         r = 0
         for x in self.ListofAgents:
             x.Reward(self.target_posx,self.target_posy)
             r += x.reward
         self.cent_r = r/self.num #average of rewards
         print("Average Reward : ", self.cent_r)
+        self.rewardhistory = cu.append(self.rewardhistory, cu.mean(np.float64(self.cent_r)))
+
         return
       
      
@@ -401,6 +414,8 @@ class GridWorld:
         self.target_posy = self.states[x][1] 
  
         self.omegalistavg = []
+        self.rewardhistory = []
+        self.rewardhistory = cu.array(self.rewardhistory)
         self.ErrorList = []
         self.Errorhistory = []
         self.Errorhistory = cu.array(np.float64(self.Errorhistory))
@@ -642,13 +657,21 @@ for m in range(3):
         fiii.savefig(d + str(2) + 'SBEbyiter.png')
         plt.close(fiii)
 
-        q = env.Errorhistory
-        fiii, ax =plt.subplots(1,1)
-        ax.plot(cu.asnumpy(q)) 
-        ax.set_yscale('log')
-        ax.set_title("Error History")
-        fiii.savefig(d +  str(2) +'ERRORbyiter.png')
-        plt.close(fiii)
+                q = env.Errorhistory
+                fiii, ax =plt.subplots(1,1)
+                ax.plot(cu.asnumpy(q)) 
+                ax.set_yscale('log')
+                ax.set_title("Error History")
+                fiii.savefig(d +  str(k) +'ERRORbyiter.png')
+                plt.close(fiii)
+
+                rew = env.rewardhistory
+                fiii, ax = plt.subpolots(1, 1)
+                ax.plot(cu.asnumpy(rew))
+                ax.set_yscale('linear')
+                ax.set_title('Mean Reward History')
+                fiii.savefig(d + str(k) + 'REWARDbyiter.png')
+                plt.close(fiii)
 
         if i%100== 0:
             data = env.Errorhistory[-100:]
@@ -656,10 +679,14 @@ for m in range(3):
                 write = csv.writer(file) 
                 write.writerows(map(lambda x: [x], data))
 
-            data = env.sbehistory[-100:]
-            with open('SBEHISTORY'+ d +'-'+str(2)+'-'+str(m)+'.csv', 'a', encoding="ISO-8859-1", newline='') as file:
-                write = csv.writer(file) 
-                write.writerows(map(lambda x: [x], data))
-    
-        
-    env.reset(2)
+                    data = env.sbehistory[-100:]
+                    with open('SBEHISTORY'+ d +'-'+str(k)+'-'+str(m)+'.csv', 'a', encoding="ISO-8859-1", newline='') as file:
+                        write = csv.writer(file) 
+                        write.writerows(map(lambda x: [x], data))
+                    data = env.rewardhistory
+                    with open('REWARDHIST' + d + '-' + str(k) + '-' + str(m) + '.csv', 'a', encodin="ISO-8859-1", newline='') as file:
+                        write = csv.writer(file)
+                        write.writerows(map(lambda x: [x], data))
+            
+                
+            env.reset(k)
