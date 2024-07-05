@@ -657,21 +657,21 @@ for m in range(3):
         fiii.savefig(d + str(2) + 'SBEbyiter.png')
         plt.close(fiii)
 
-                q = env.Errorhistory
-                fiii, ax =plt.subplots(1,1)
-                ax.plot(cu.asnumpy(q)) 
-                ax.set_yscale('log')
-                ax.set_title("Error History")
-                fiii.savefig(d +  str(k) +'ERRORbyiter.png')
-                plt.close(fiii)
+        q = env.Errorhistory
+        fiii, ax =plt.subplots(1,1)
+        ax.plot(cu.asnumpy(q)) 
+        ax.set_yscale('log')
+        ax.set_title("Error History")
+        fiii.savefig(d +  str(2) +'ERRORbyiter.png')
+        plt.close(fiii)
 
-                rew = env.rewardhistory
-                fiii, ax = plt.subpolots(1, 1)
-                ax.plot(cu.asnumpy(rew))
-                ax.set_yscale('linear')
-                ax.set_title('Mean Reward History')
-                fiii.savefig(d + str(k) + 'REWARDbyiter.png')
-                plt.close(fiii)
+        rew = env.rewardhistory
+        fiii, ax = plt.subpolots(1, 1)
+        ax.plot(cu.asnumpy(rew))
+        ax.set_yscale('linear')
+        ax.set_title('Mean Reward History')
+        fiii.savefig(d + str(2) + 'REWARDbyiter.png')
+        plt.close(fiii)
 
         if i%100== 0:
             data = env.Errorhistory[-100:]
@@ -679,14 +679,13 @@ for m in range(3):
                 write = csv.writer(file) 
                 write.writerows(map(lambda x: [x], data))
 
-                    data = env.sbehistory[-100:]
-                    with open('SBEHISTORY'+ d +'-'+str(k)+'-'+str(m)+'.csv', 'a', encoding="ISO-8859-1", newline='') as file:
-                        write = csv.writer(file) 
-                        write.writerows(map(lambda x: [x], data))
-                    data = env.rewardhistory
-                    with open('REWARDHIST' + d + '-' + str(k) + '-' + str(m) + '.csv', 'a', encodin="ISO-8859-1", newline='') as file:
-                        write = csv.writer(file)
-                        write.writerows(map(lambda x: [x], data))
-            
+            data = env.sbehistory[-100:]
+            with open('SBEHISTORY'+ d +'-'+str(2)+'-'+str(m)+'.csv', 'a', encoding="ISO-8859-1", newline='') as file:
+                write = csv.writer(file) 
+                write.writerows(map(lambda x: [x], data))
+            data = env.rewardhistory[-100:]
+            with open('REWARDHIST'+ d +'-'+str(2)+'-'+str(m)+'.csv', 'a', encoding="ISO-8859-1", newline='') as file:
+                write = csv.writer(file) 
+                write.writerows(map(lambda x: [x], data))            
                 
-            env.reset(k)
+        env.reset(2)
