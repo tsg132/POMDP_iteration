@@ -55,7 +55,20 @@ ya[2] = yc[0]
 ya[3] = ya.mean(axis = 1)
 
 y2 = ya.iloc[:,3] 
+
+
+ya = pd.read_csv('OPT_SBE_00.csv',header = None)
+yb = pd.read_csv('OPT_SBE_11.csv',header = None) 
+yc = pd.read_csv('OPT_SBE_22.csv',header = None) 
  
+ya = pd.DataFrame(ya)
+yb = pd.DataFrame(yb) 
+yc = pd.DataFrame(yb) 
+ya[1] = yb[0] 
+ya[2] = yc[0]
+ya[3] = ya.mean(axis = 1)
+
+k = ya.iloc[:,3] 
  
 v = y.ewm(alpha=0.025).mean() 
 y = y.rolling(20).mean()
@@ -65,6 +78,9 @@ y2 = y2.rolling(20).mean()
 
 v3 = y3.ewm(alpha=0.025).mean()
 y3 = y3.rolling(20).mean()
+
+v4 = k.ewm(alpha=0.025).mean()
+k = k.rolling(20).mean()
  
 plt.rcParams["figure.figsize"] = (40,10)
 fiii, ax = plt.subplots(1,1)
@@ -85,6 +101,8 @@ ax.plot(y2, color = 'green',alpha = 0.2, linewidth = 2)
 ax.plot(v3, color = 'red', label = r'CC')
 ax.plot(y3, color = 'red',alpha = 0.2, linewidth = 2)
 
+ax.plot(v4, color = 'purple', label = r'OPT')
+ax.plot(k, color = 'purple',alpha = 0.2, linewidth = 2)
  
 ax.set_xlabel(r'$i$', fontsize=24) 
 ax.set_ylabel(r'SBE' , fontsize=24,position=(100, 0.5)) 
