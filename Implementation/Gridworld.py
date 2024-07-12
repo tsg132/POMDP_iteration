@@ -412,7 +412,7 @@ class GridWorld:
             agent.reset(centralized, self.omega_init, self.omega_dd_init)        
         return
 
-    def sbe(self):
+    def sbe(self, iter):
         sbe = 0 
         for x in self.ListofAgents:
             y = x.td_error
@@ -420,7 +420,8 @@ class GridWorld:
 
         sbe = sbe/self.num
         print("Sbe Error: ", sbe)
-        self.sbehistory = cu.append(self.sbehistory,cu.mean(np.float64(sbe))) 
+        if (iter % self.F == 0):
+            self.sbehistory = cu.append(self.sbehistory,cu.mean(np.float64(sbe))) 
         return
 
     def Error(self):
@@ -531,7 +532,7 @@ class GridWorld:
         self.Actual_transition(self.jointaction)  
 
         self.Error() 
-        self.sbe()
+        self.sbe(iter)
          
         return
     
