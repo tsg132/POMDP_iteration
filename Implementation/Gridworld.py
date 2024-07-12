@@ -44,6 +44,7 @@ class GridWorld:
         self.phi = phi
         self.cent_r = 0
         self.beliefvectors = beliefvectors
+        self.F = 3
         
         # Set information about the gridworld
         self.gamma = num #between 1 and num of agents 
@@ -631,21 +632,23 @@ for k in range(1):
                 #     print("Centr: CC, iter", i,"exp", m)
                 #     env.step(j, centralizedtraining = 0)
 
-                w2 = env.sbehistory
-                fiii, ax = plt.subplots(1,1)
-                ax.plot(cu.asnumpy(w2))
-                ax.set_yscale('log') 
-                ax.set_title("SBE Error")
-                fiii.savefig(d + str(k) + 'SBEbyiter.png')
-                plt.close(fiii)
+                if (i % F == 0):
 
-                q = env.Errorhistory
-                fiii, ax =plt.subplots(1,1)
-                ax.plot(cu.asnumpy(q)) 
-                ax.set_yscale('log')
-                ax.set_title("Error History")
-                fiii.savefig(d +  str(k) +'ERRORbyiter.png')
-                plt.close(fiii)
+                    w2 = env.sbehistory
+                    fiii, ax = plt.subplots(1,1)
+                    ax.plot(cu.asnumpy(w2))
+                    ax.set_yscale('log') 
+                    ax.set_title("SBE Error")
+                    fiii.savefig(d + str(k) + 'SBEbyiter.png')
+                    plt.close(fiii)
+
+                    q = env.Errorhistory
+                    fiii, ax =plt.subplots(1,1)
+                    ax.plot(cu.asnumpy(q)) 
+                    ax.set_yscale('log')
+                    ax.set_title("Error History")
+                    fiii.savefig(d +  str(k) +'ERRORbyiter.png')
+                    plt.close(fiii)
 
                 if i%100== 0:
                     data = env.Errorhistory[-100:]

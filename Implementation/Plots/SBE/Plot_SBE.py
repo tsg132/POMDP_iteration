@@ -13,34 +13,34 @@ mpl.rcParams['font.family'] = 'serif'
 
 from scipy.signal import lfilter
 
-ya = pd.read_csv('DD_SBE_0.csv',header = None)
-yb = pd.read_csv('DD_SBE_1.csv',header = None)
-yc = pd.read_csv('DD_SBE_2.csv',header = None)
+# ya = pd.read_csv('DD_SBE_0.csv',header = None)
+# yb = pd.read_csv('DD_SBE_1.csv',header = None)
+# yc = pd.read_csv('DD_SBE_2.csv',header = None)
  
-ya = pd.DataFrame(ya)
-yb = pd.DataFrame(yb)
-yc = pd.DataFrame(yc)
+# ya = pd.DataFrame(ya)
+# yb = pd.DataFrame(yb)
+# yc = pd.DataFrame(yc)
 
-ya[1] = yb[0]
-ya[2] = yc[0]
-ya[3] = ya.mean(axis = 1)
+# ya[1] = yb[0]
+# ya[2] = yc[0]
+# ya[3] = ya.mean(axis = 1)
 
-y = ya.iloc[:,3]
+# y = ya.iloc[:,3]
 
 
-ya = pd.read_csv('CC_SBE_0.csv',header = None)
-yb = pd.read_csv('CC_SBE_1.csv',header = None)
-yc = pd.read_csv('CC_SBE_2.csv',header = None)
+# ya = pd.read_csv('CC_SBE_0.csv',header = None)
+# yb = pd.read_csv('CC_SBE_1.csv',header = None)
+# yc = pd.read_csv('CC_SBE_2.csv',header = None)
  
-ya = pd.DataFrame(ya)
-yb = pd.DataFrame(yb)
-yc = pd.DataFrame(yc)
+# ya = pd.DataFrame(ya)
+# yb = pd.DataFrame(yb)
+# yc = pd.DataFrame(yc)
 
-ya[1] = yb[0]
-ya[2] = yc[0]
-ya[3] = ya.mean(axis = 1)
+# ya[1] = yb[0]
+# ya[2] = yc[0]
+# ya[3] = ya.mean(axis = 1)
 
-y3 = ya.iloc[:,3] 
+# y3 = ya.iloc[:,3] 
 
 
 ya = pd.read_csv('CD_SBE_0.csv',header = None)
@@ -70,14 +70,14 @@ ya[3] = ya.mean(axis = 1)
 
 k = ya.iloc[:,3] 
  
-v = y.ewm(alpha=0.025).mean() 
-y = y.rolling(20).mean()
+# v = y.ewm(alpha=0.025).mean() 
+# y = y.rolling(20).mean()
 
 v2 = y2.ewm(alpha=0.025).mean()
 y2 = y2.rolling(20).mean()
 
-v3 = y3.ewm(alpha=0.025).mean()
-y3 = y3.rolling(20).mean()
+# v3 = y3.ewm(alpha=0.025).mean()
+# y3 = y3.rolling(20).mean()
 
 v4 = k.ewm(alpha=0.025).mean()
 k = k.rolling(20).mean()
@@ -92,14 +92,14 @@ ax.grid(which = 'both',alpha = 0.5, zorder=3,linestyle='dashed')
 ax.set_axisbelow(False)
 plt.rc('axes', axisbelow=False) 
 
-ax.plot(v, color = 'blue', label = r'Diffusion')
-ax.plot(y, color = 'blue',alpha = 0.2, linewidth = 2)
+# ax.plot(v, color = 'blue', label = r'Diffusion')
+# ax.plot(y, color = 'blue',alpha = 0.2, linewidth = 2)
 
 ax.plot(v2, color = 'green', label = r' CD')
 ax.plot(y2, color = 'green',alpha = 0.2, linewidth = 2)
 
-ax.plot(v3, color = 'red', label = r'CC')
-ax.plot(y3, color = 'red',alpha = 0.2, linewidth = 2)
+# ax.plot(v3, color = 'red', label = r'CC')
+# ax.plot(y3, color = 'red',alpha = 0.2, linewidth = 2)
 
 ax.plot(v4, color = 'purple', label = r'OPT')
 ax.plot(k, color = 'purple',alpha = 0.2, linewidth = 2)

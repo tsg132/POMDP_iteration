@@ -164,6 +164,7 @@ class Agent:
         self.centralized_m = np.longdouble(self.centralized_m) 
         self.approx_transition_model =  [1/(self.height*self.width)]*(self.height*self.width)
         self.cen_transition_matrix_byagent =  [1/(self.height*self.width)]*(self.height*self.width)
+        self.momentum = 0.9
         
         #Beliefs
         self.n = [1/(self.height*self.width)]*(self.height*self.width)
