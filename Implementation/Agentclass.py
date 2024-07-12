@@ -215,6 +215,9 @@ class Agent:
         self.omegahistory = []
         self.num = num
         self.alpha = alpha
+        self.accumulated_td_errors = []
+        self.accumulated_gradients = []
+        self.F = 3
         #States 
         x = 0
         self.agentstates  = [0]*(self.height*self.width)
@@ -362,16 +365,24 @@ class Agent:
         return
 
 
-    def TD_Error(self): 
+    def TD_Error(self, iter): 
         if (self.idnum == 1):
             print("TD_Error - Agent")
             #print(self.omegalist)
             
         self.td_error = self.reward + self.discount_factor * self.phi * np.dot(self.omegalist, np.array(self.n)) - self.phi * np.dot(self.omegalist, self.m)
+
+        self.accumulated_td_errors.append(self.td_error)
         
         gradient = self.m
-        for i in range(len(self.omegalist)):
-            self.omegalist[i] = self.omegalist[i]*(1-2*self.alpha*self.rho) + self.alpha*(self.td_error)*gradient[i]*self.phi
+
+        self.accumulated_gradients.append(gradient)
+        
+        if (len(self.accumulated_td_errors) == self.F and len(self.accumulated_gradients) == self.F and iter > 0):
+          for i in range(len(self.omegalist)):
+            self.omegalist[i] = self.omegalist[i]*(1-2*self.alpha*self.rho) + self.alpha*self.accumulation_function()*self.phi
+          self.accumulated_td_errors.clear()
+          self.accumulated_gradients.clear()
         if (self.idnum == 1):
             print("TD_Error Centralized - Agent")
             #print("self.td_error", self.td_error)
@@ -390,7 +401,7 @@ class Agent:
         return 
     
       
-    def Randomized_action(self): 
+    def Randomized_(self): 
         self.action = self.agentstates[np.random.choice([i for i in range(len(self.agentstates))], p =self.m)] #random choice among all states, with replacement, with transition probabilities corresponding to those from its previous state
         return      
     
@@ -433,30 +444,6 @@ class Agent:
         for x in range(len(self.agentstates)):
             self.centralized_m[x] = self.centralized_m[x] / normalize 
         return 
-    
-    
-    def Optimized_Adapt(self, jointobservation, gamma):
-        if self.idnum == 1:
-            print("Optimized Adapt - Agent")
-        
-        normalize_centralized = 0
-        normalize_decentralized = 0
-        
-        # Combine centralized and decentralized adaptations
-        for x in range(len(self.agentstates)):
-            y = jointobservation[x]
-            self.centralized_m[x] = np.longdouble(y * self.centralized_n[x])
-            normalize_centralized += self.centralized_m[x]
-            
-            z = self.ObsMatrix[x][self.observedstate]  # probability of being at observed state, given it was in state s'
-            self.m[x] = (z ** gamma) * self.n[x]
-            normalize_decentralized += self.m[x]
-
-        for x in range(len(self.agentstates)):
-            self.centralized_m[x] /= normalize_centralized
-            self.m[x] /= normalize_decentralized
-        
-        return
 
     #Transition matrix calculation performed by the agent
     def centralized_transition_matrix_by_agent_fn(self,s,a):
@@ -502,16 +489,25 @@ class Agent:
         return
 
     
-    def TD_Error_Centralized(self,reward): 
+    def TD_Error_Centralized(self,reward, iter): 
         if (self.idnum == 1):
             print("TD_Error Centralized - Agent") 
 
         self.td_error = reward + self.discount_factor * self.phi * np.longdouble(np.dot(self.omegalist, self.centralized_n)) - self.phi * np.longdouble(np.dot(self.omegalist,self.centralized_m))
+
+        self.accumulated_td_errors.append(self.td_error)
         
         gradient = self.centralized_m
-        
-        for i in range(len(self.omegalist)):
-            self.omegalist[i] = np.longdouble(self.omegalist[i]*(1-2*self.alpha*self.rho)) + np.longdouble(self.alpha*(self.td_error)*gradient[i]*self.phi)
+
+        self.accumulated_td_errors.append(gradient)
+
+
+        if (len(self.accumulated_td_errors) == self.F and len(self.accumulated_gradients) == self.F and iter > 0):
+          for i in range(len(self.omegalist)):
+              self.omegalist[i] = np.longdouble(self.omegalist[i]*(1-2*self.alpha*self.rho)) + np.longdouble(self.alpha*self.accumulation_function()*self.phi)
+          self.accumulated_gradients.clear()
+          self.accumulated_td_errors.clear()
+            
          
         if (self.idnum == 1):
             print("TD_Error Centralized - Agent") 
@@ -528,6 +524,13 @@ class Agent:
          
         return
     
+    def accumulation_function(self):
+        accumulated_grad = 0
+        for i in range(self.F):
+          accumulated_grad += self.accumulated_td_errors[i]*self.accumulated_gradients[i]
+        return (1/self.F)*accumulated_grad
+
+
     def Val(self, beliefvectors):
         if (self.idnum == 1):
             print("Val - Agent")

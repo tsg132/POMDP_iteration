@@ -1,5 +1,13 @@
 # Changes to the code:
-write changes here
+In Gridworld.py, I changed the number of experiments to 1, also, I am relying on past data for diffusion and centralized evaluation and execution algorithms. Still in Gridworld, I added another parameter to the step function called iter to keep track on which number of iterations we are, I've also added the same parameter to TD_Error and TD_Centralized_Error functions in Agentclass.py. In the initialization function of Agentclass.py, I added the proposed hyperparameter F (details on how this proposed new algorithm works is currently available on overleaf). Additionally, I've added two new arrays called accumulated_td_errors and accumulated_gradients. Under both TD error functions, for each iteration we are in, if iter != 0 (mod F), then I append to these new list. In order to keep track of this I added an if block and under the block if iter == 0 (mod F) (this practically didn't work which I couldn't solve why but theoretically len(self.accumulated_td_errors) == self.F and len(self.accumulated_gradients) == 0 is true iff iter == 0 (mod F) so I used this), I perform the parameter update. The parameter update is changed per the proposed algorithm available on overleaf. But under both blocks for both TD error functions, I basically changed self.td_error * gradient[i] part in the only line available under the for loop for both functions with self.accumulation_function(), and after the for loop is complete, I cleared both lists. accumulation_function(self) is defined as:
+
+def accumulation_function(self):
+   accumulated_gradient = 0
+   for i in range(self.F):
+      accumulated_gradient += self.accumulated_td_errors[i] * self.accumulated_gradients[i]
+   return accumulated_gradient
+
+These are currently the only changes made in the document.
 
 
 # ---- Past Code -----
